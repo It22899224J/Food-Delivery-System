@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  restaurant-service:
+    build:
+      context: .
+      dockerfile: apps/restaurant/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - restaurant-db
+    environment:
+      DATABASE_URL: postgres://postgres:password@restaurant-db:5432/restaurant
+    networks:
+      - app-network
+
+  restaurant-db:
+    image: postgres:15
+    container_name: restaurant-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: restaurant
+    ports:
+      - "5433:5432"
+    volumes:
+      - restaurant_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  restaurant_db_data:
