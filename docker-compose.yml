@@ -29,8 +29,38 @@ services:
     networks:
       - app-network
 
+  # New Delivery Service
+  delivery-service:
+    build:
+      context: .
+      dockerfile: apps/delivery/Dockerfile
+    ports:
+      - "3003:3002"
+    depends_on:
+      - delivery-db
+    environment:
+      DATABASE_URL: postgres://postgres:password@delivery-db:5432/delivery
+    networks:
+      - app-network
+
+  delivery-db:
+    image: postgres:15
+    container_name: delivery-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: delivery
+    ports:
+      - "5434:5432" 
+    volumes:
+      - delivery_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
 networks:
   app-network:
 
 volumes:
   restaurant_db_data:
+  delivery_db_data:
