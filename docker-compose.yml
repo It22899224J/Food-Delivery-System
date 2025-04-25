@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: apps/delivery/Dockerfile
     ports:
-      - "3003:3002"
+      - "3002:3002"
     depends_on:
       - delivery-db
     environment:

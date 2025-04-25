@@ -1,5 +1,5 @@
 export class CreateDeliveryDto {
-    orderId: string;
-    driverId: string;
-    status?: string;  // Optional (defaults to 'PENDING' in schema)
-  }
+  orderId: string;
+  driverId: string;
+  location: string;
+}
