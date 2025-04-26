@@ -1,6 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderStatusDto, OrderStatus } from './dto/update-order-status.dto';
+import { UpdatePaymentStatusDto, PaymentStatus } from './dto/update-payment-status.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -16,20 +19,50 @@ export class OrderService {
       data: {
         userId: createOrderDto.userId,
         restaurantId: createOrderDto.restaurantId,
-        items: JSON.parse(JSON.stringify(createOrderDto.items)), // Convert to plain object
+        status: OrderStatus.PENDING,
         totalAmount,
-        status: 'PENDING',
+        paymentStatus: PaymentStatus.PENDING,
+        paymentMethod: 'CARD',
+        deliveryAddress: createOrderDto.deliveryAddress,
+        deliveryInstructions: createOrderDto.deliveryInstructions,
+        items: {
+          create: createOrderDto.items.map((item) => ({
+            itemId: item.itemId,
+            quantity: item.quantity,
+            price: item.price,
+            specialInstructions: item.specialInstructions,
+          })),
+        },
+        statusHistory: {
+          create: {
+            newStatus: OrderStatus.PENDING,
+            changedBy: 'system',
+          },
+        },
+      },
+      include: {
+        items: true,
+        statusHistory: true,
       },
     });
   }
 
   async findAllOrders() {
-    return this.prisma.order.findMany();
+    return this.prisma.order.findMany({
+      include: {
+        items: true,
+        statusHistory: true,
+      },
+    });
   }
 
   async findOrderById(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
+      include: {
+        items: true,
+        statusHistory: true,
+      },
     });
 
     if (!order) {
@@ -37,5 +70,107 @@ export class OrderService {
     }
 
     return order;
+  }
+
+  async findOrdersByUser(userId: string) {
+    return this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: true,
+        statusHistory: true,
+      },
+    });
+  }
+
+  async findOrdersByRestaurant(restaurantId: string) {
+    return this.prisma.order.findMany({
+      where: { restaurantId },
+      include: {
+        items: true,
+        statusHistory: true,
+      },
+    });
+  }
+
+  async updateOrderStatus(id: string, updateStatusDto: UpdateOrderStatusDto) {
+    const order = await this.findOrderById(id);
+    
+    // Validate status transition
+    if (!this.isValidStatusTransition(order.status as OrderStatus, updateStatusDto.status)) {
+      throw new BadRequestException('Invalid status transition');
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: updateStatusDto.status,
+        statusHistory: {
+          create: {
+            previousStatus: order.status,
+            newStatus: updateStatusDto.status,
+            changedBy: updateStatusDto.changedBy,
+          },
+        },
+      },
+      include: {
+        items: true,
+        statusHistory: true,
+      },
+    });
+  }
+
+  async updatePaymentStatus(id: string, updatePaymentDto: UpdatePaymentStatusDto) {
+    await this.findOrderById(id);
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        paymentStatus: updatePaymentDto.status,
+      },
+      include: {
+        items: true,
+        statusHistory: true,
+      },
+    });
+  }
+
+  async cancelOrder(id: string, cancelledBy: string) {
+    const order = await this.findOrderById(id);
+
+    if (order.status === OrderStatus.DELIVERED) {
+      throw new BadRequestException('Cannot cancel a delivered order');
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: OrderStatus.CANCELLED,
+        statusHistory: {
+          create: {
+            previousStatus: order.status,
+            newStatus: OrderStatus.CANCELLED,
+            changedBy: cancelledBy,
+          },
+        },
+      },
+      include: {
+        items: true,
+        statusHistory: true,
+      },
+    });
+  }
+
+  private isValidStatusTransition(currentStatus: OrderStatus, newStatus: OrderStatus): boolean {
+    const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+      [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+      [OrderStatus.PREPARING]: [OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELLED],
+      [OrderStatus.READY_FOR_PICKUP]: [OrderStatus.ON_THE_WAY, OrderStatus.CANCELLED],
+      [OrderStatus.ON_THE_WAY]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+      [OrderStatus.DELIVERED]: [],
+      [OrderStatus.CANCELLED]: [],
+    };
+
+    return validTransitions[currentStatus]?.includes(newStatus) ?? false;
   }
 }

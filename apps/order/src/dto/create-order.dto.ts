@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsNumber } from 'class-validator';
+import { IsString, IsArray, IsNumber, IsOptional } from 'class-validator';
 
 class OrderItemDto {
   @IsString()
@@ -9,6 +9,10 @@ class OrderItemDto {
 
   @IsNumber()
   price: number;
+
+  @IsString()
+  @IsOptional()
+  specialInstructions?: string;
 }
 
 export class CreateOrderDto {
@@ -17,6 +21,13 @@ export class CreateOrderDto {
 
   @IsString()
   restaurantId: string;
+
+  @IsString()
+  deliveryAddress: string;
+
+  @IsString()
+  @IsOptional()
+  deliveryInstructions?: string;
 
   @IsArray()
   items: OrderItemDto[];

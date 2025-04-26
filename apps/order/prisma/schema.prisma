@@ -7,17 +7,67 @@ datasource db {
   url      = "postgresql://postgres:password@order-db:5432/order"
 }
 
-
-
 model Order {
-  id          String   @id @default(uuid())
-  userId      String   // Customer ID
-  restaurantId String  // Restaurant ID
-  items       Json     // Array of { itemId, quantity, price }
-  status      String   // "PENDING", "CONFIRMED", "DELIVERED", etc.
-  totalAmount Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String             @id @default(uuid())
+  userId             String             // Customer ID
+  restaurantId       String             // Restaurant ID
+  deliveryPersonnelId String?           // Assigned driver ID (optional as it might be assigned later)
+  status             OrderStatus        @default(PENDING)
+  totalAmount        Float
+  deliveryAddress    String
+  deliveryInstructions String?          // Optional
+  paymentStatus      PaymentStatus      @default(PENDING)
+  paymentMethod      String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
-   @@map("orders")
+  // Relations
+  items              OrderItem[]
+  statusHistory      OrderStatusHistory[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 String   @id @default(uuid())
+  orderId            String
+  itemId             String   // References menu item from Restaurant Service
+  quantity           Int
+  price              Float    // Price at time of ordering
+  specialInstructions String?  // Optional
+
+  // Relation
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id                 String      @id @default(uuid())
+  orderId            String
+  previousStatus     OrderStatus?
+  newStatus          OrderStatus
+  changedBy          String      // system/customer/restaurant/driver
+  timestamp          DateTime    @default(now())
+
+  // Relation
+  order              Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_status_history")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
 }
