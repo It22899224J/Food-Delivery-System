@@ -15,7 +15,7 @@ model Delivery {
   assignedAt    DateTime? 
   pickedUpAt    DateTime?
   deliveredAt   DateTime?
-  location      String  
+  location      Json?  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

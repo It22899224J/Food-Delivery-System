@@ -1,5 +1,8 @@
 export class CreateDeliveryDto {
   orderId: string;
   driverId: string;
-  location: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
 }
