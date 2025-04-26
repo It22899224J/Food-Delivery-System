@@ -20,4 +20,4 @@ RUN npm run build:delivery
 EXPOSE 3002
 
 # Step 8: Start delivery service
-CMD ["npm", "run", "start:delivery:prod"]
+CMD ["/bin/sh", "-c", "npx prisma migrate deploy --schema=apps/delivery/prisma/schema.prisma && npm run start:delivery:prod"]
