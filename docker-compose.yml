@@ -58,9 +58,42 @@ services:
     networks:
       - app-network
 
+
+  # New Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: apps/order/Dockerfile
+    ports:
+      - "3004:3004"
+    depends_on:
+      - order-db
+    environment:
+      DATABASE_URL: postgres://postgres:password@order-db:5432/order
+    networks:
+      - app-network
+
+  order-db:
+    image: postgres:15
+    container_name: order-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order
+    ports:
+      - "5435:5432" 
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+
+
 networks:
   app-network:
 
 volumes:
   restaurant_db_data:
   delivery_db_data:
+  order_db_data:

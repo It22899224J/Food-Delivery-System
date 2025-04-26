@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:password@order-db:5432/order"
+}
+
+
+
+model Order {
+  id          String   @id @default(uuid())
+  userId      String   // Customer ID
+  restaurantId String  // Restaurant ID
+  items       Json     // Array of { itemId, quantity, price }
+  status      String   // "PENDING", "CONFIRMED", "DELIVERED", etc.
+  totalAmount Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+   @@map("orders")
+}
