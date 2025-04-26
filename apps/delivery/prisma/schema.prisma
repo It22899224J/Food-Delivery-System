@@ -9,13 +9,13 @@ datasource db {
 
 model Delivery {
   id            String   @id @default(uuid())
-  orderId       String   // reference to Order service
-  driverId      String   // reference to the Delivery Personnel from Auth service
+  orderId       String   
+  driverId      String   
   status        DeliveryStatus @default(PENDING)
   assignedAt    DateTime? 
   pickedUpAt    DateTime?
   deliveredAt   DateTime?
-  location      String   // could be JSON or text-based, for simplicity we keep it string
+  location      Json?  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
