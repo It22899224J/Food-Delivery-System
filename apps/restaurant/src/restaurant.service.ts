@@ -20,7 +20,12 @@ export class RestaurantService {
 
   // Find a specific restaurant by ID
   async findOne(id: number) {
-    return this.prisma.restaurant.findUnique({ where: { id } });
+    return this.prisma.restaurant.findUnique({
+      where: { id },
+      include: {
+      foodItems: true,
+      },
+    });
   }
 
   // Update a restaurant by ID
