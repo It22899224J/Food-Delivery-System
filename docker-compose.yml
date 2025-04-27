@@ -1,7 +1,20 @@
 version: '3.8'
 
 services:
-  restaurant-service:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - restaurant
+      - delivery-service
+      - order-service
+    networks:
+      - app-network
+
+  restaurant:
     build:
       context: .
       dockerfile: apps/restaurant/Dockerfile
@@ -92,8 +105,12 @@ services:
 
 networks:
   app-network:
+    driver: bridge
 
 volumes:
+  restaurant_data:
+  delivery_data:
+  order_data:
   restaurant_db_data:
   delivery_db_data:
   order_db_data:
