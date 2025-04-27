@@ -1,41 +1,49 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, DeliveryStatus } from '@prisma/client';
+import { PrismaClient, DeliveryStatus, VehicleType } from '@prisma/client';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+import { CreateDriverDto } from './dto/create-driver.dto';
+import { UpdateDriverDto } from './dto/update-driver.dto';
 
 @Injectable()
 export class DeliveryService {
   private prisma = new PrismaClient();
 
-  async create(createDto: CreateDeliveryDto) {
+  // Delivery methods
+  async createDelivery(createDto: CreateDeliveryDto) {
+    const availableDriver = await this.findAvailableDriver(createDto.startLocation);
+    if (!availableDriver) {
+      throw new NotFoundException('No available drivers found');
+    }
+
     return this.prisma.delivery.create({
       data: {
         orderId: createDto.orderId,
-        driverId: createDto.driverId,
-        location: JSON.stringify(createDto.location),
-        status: DeliveryStatus.PENDING,
+        driverId: availableDriver.id,
+        startLocation: createDto.startLocation,
+        endLocation: createDto.endLocation,
+        status: 'ASSIGNED',
         assignedAt: new Date(),
+        estimatedTime: createDto.estimatedTime,
       },
     });
   }
 
-  async update(id: string, updateDto: UpdateDeliveryDto) {
-    const existingDelivery = await this.prisma.delivery.findUnique({
-      where: { id },
-    });
-
+  async updateDelivery(id: string, updateDto: UpdateDeliveryDto) {
+    const existingDelivery = await this.prisma.delivery.findUnique({ where: { id } });
     if (!existingDelivery) {
       throw new NotFoundException(`Delivery with ID ${id} not found`);
     }
 
     const updateData: any = {
       status: updateDto.status,
-      ...(updateDto.location && { location: updateDto.location }),
+      ...(updateDto.currentLocation && { currentLocation: updateDto.currentLocation }),
+      ...(updateDto.estimatedTime && { estimatedTime: updateDto.estimatedTime }),
     };
 
-    if (updateDto.status === DeliveryStatus.PICKED_UP) {
+    if (updateDto.status === 'PICKED_UP') {
       updateData.pickedUpAt = new Date();
-    } else if (updateDto.status === DeliveryStatus.DELIVERED) {
+    } else if (updateDto.status === 'DELIVERED') {
       updateData.deliveredAt = new Date();
     }
 
@@ -45,17 +53,17 @@ export class DeliveryService {
     });
   }
 
-  async findAll() {
+  async findAllDeliveries() {
     return this.prisma.delivery.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+      include: { driver: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  async findOne(id: string) {
+  async findDeliveryById(id: string) {
     const delivery = await this.prisma.delivery.findUnique({ 
       where: { id },
+      include: { driver: true },
     });
 
     if (!delivery) {
@@ -63,5 +71,85 @@ export class DeliveryService {
     }
 
     return delivery;
+  }
+
+  // Driver methods
+  async createDriver(createDto: CreateDriverDto) {
+    return this.prisma.driver.create({
+      data: {
+        name: createDto.name,
+        email: createDto.email,
+        contact: createDto.contact,
+        vehicleType: createDto.vehicleType,
+        licensePlate: createDto.licensePlate,
+        location: createDto.location,
+        isAvailable: true,
+      },
+    });
+  }
+
+  async updateDriver(id: string, updateDto: UpdateDriverDto) {
+    return this.prisma.driver.update({
+      where: { id },
+      data: updateDto,
+    });
+  }
+
+  async findAllDrivers() {
+    return this.prisma.driver.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findDriverById(id: string) {
+    const driver = await this.prisma.driver.findUnique({ where: { id } });
+    if (!driver) {
+      throw new NotFoundException(`Driver with ID ${id} not found`);
+    }
+    return driver;
+  }
+
+  async findAvailableDrivers() {
+    return this.prisma.driver.findMany({
+      where: { isAvailable: true },
+    });
+  }
+
+  private async findAvailableDriver(location: { lat: number; lng: number }) {
+    const availableDrivers = await this.prisma.driver.findMany({
+      where: { isAvailable: true },
+    });
+
+    if (availableDrivers.length === 0) return null;
+
+    // Simple distance calculation (in production, use proper geospatial queries)
+    const driversWithDistance = availableDrivers.map(driver => {
+      const driverLoc = driver.location as { lat: number; lng: number };
+      const distance = this.calculateDistance(
+        location.lat,
+        location.lng,
+        driverLoc?.lat || 0,
+        driverLoc?.lng || 0,
+      );
+      return { ...driver, distance };
+    });
+
+    return driversWithDistance.sort((a, b) => a.distance - b.distance)[0];
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth radius in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
   }
 }

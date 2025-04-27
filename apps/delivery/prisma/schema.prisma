@@ -10,20 +10,45 @@ datasource db {
 model Delivery {
   id            String   @id @default(uuid())
   orderId       String   
-  driverId      String   
+  driverId      String
+  driver        Driver   @relation(fields: [driverId], references: [id])
   status        DeliveryStatus @default(PENDING)
   assignedAt    DateTime? 
   pickedUpAt    DateTime?
   deliveredAt   DateTime?
-  location      Json?  
+  currentLocation Json?  
+  startLocation Json
+  endLocation   Json
+  estimatedTime Int? // in minutes
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Driver {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  contact     String
+  location    Json?
+  isAvailable Boolean  @default(false)
+  vehicleType VehicleType
+  licensePlate String?
+  deliveries  Delivery[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum DeliveryStatus {
   PENDING
   ASSIGNED
   PICKED_UP
+  IN_TRANSIT
   DELIVERED
   CANCELLED
+}
+
+enum VehicleType {
+  BIKE
+  CAR
+  VAN
 }
