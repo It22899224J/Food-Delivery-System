@@ -1,30 +1,31 @@
-# Step 1: Use official Node.js image as the base
+# Step 1: Use official Node.js image
 FROM node:18 AS build
 
-# Step 2: Set working directory inside container
+# Step 2: Set working directory
 WORKDIR /usr/src/app
 
-# Step 3: Copy Prisma schema first (to leverage Docker caching)
-COPY ../../apps/restaurant/prisma ./apps/restaurant/prisma
+# Step 3: Copy only what's needed
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY apps/restaurant/prisma apps/restaurant/prisma
 
-# Step 4: Copy package.json and tsconfig for installation
-COPY ../../package*.json ./
-COPY ../../tsconfig*.json ./
-
-# Step 5: Install dependencies
+# Step 4: Install dependencies
 RUN npm install
 
-# Step 6: Copy all source code
-COPY ../../ .
+# Step 5: Copy the rest of the app
+COPY . .
 
-# Step 7: Generate Prisma client for the correct platform
+# Step 6: Generate Prisma client
 RUN npx prisma generate --schema=apps/restaurant/prisma/schema.prisma
 
-# Step 8: Build the specific microservice
+# Step 7: Build the specific microservice
 RUN npm run build:restaurant
 
-# Step 9: Expose the port
+# Step 8: Expose app port
 EXPOSE 3000
 
-# Step 10: Start the application
+# Step 9: Set environment variable (optional but nice)
+ENV PORT=3000
+
+# Step 10: Run the application
 CMD ["npm", "run", "start:restaurant:prod"]
