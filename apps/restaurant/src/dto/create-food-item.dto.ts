@@ -4,4 +4,5 @@ export class CreateFoodItemDto {
   price: number;
   availableCount: number;
   restaurantId: number;
+  image: Buffer; // Add the image as a binary buffer
 }

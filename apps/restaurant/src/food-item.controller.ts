@@ -6,18 +6,25 @@ import {
   Param,
   Put,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { FoodItemService } from './food-item.service';
 import { CreateFoodItemDto } from './dto/create-food-item.dto';
 import { UpdateFoodItemDto } from './dto/update-food-item.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('food-items')
 export class FoodItemController {
   constructor(private readonly foodItemService: FoodItemService) {}
 
   @Post()
-  async create(@Body() createFoodItemDto: CreateFoodItemDto) {
-    return this.foodItemService.create(createFoodItemDto);
+  @UseInterceptors(FileInterceptor('image')) // 'image' is the name of the file field
+  async create(
+    @Body() createFoodItemDto: CreateFoodItemDto,
+    @UploadedFile() image: Express.Multer.File, // Handle the uploaded image
+  ) {
+    return this.foodItemService.create(createFoodItemDto, image); // Pass the image to service
   }
 
   @Get()
@@ -31,11 +38,13 @@ export class FoodItemController {
   }
 
   @Put(':id')
+  @UseInterceptors(FileInterceptor('image')) // For updating with image upload support
   async update(
     @Param('id') id: number,
     @Body() updateFoodItemDto: UpdateFoodItemDto,
+    @UploadedFile() image: Express.Multer.File, // Handle the uploaded image
   ) {
-    return this.foodItemService.update(+id, updateFoodItemDto);
+    return this.foodItemService.update(+id, updateFoodItemDto, image); // Pass the image to service
   }
 
   @Delete(':id')
