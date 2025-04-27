@@ -46,19 +46,58 @@ export class FoodItemService {
 
     return newItem; 
   }
-  async update(
-    id: string,
-    dto: UpdateFoodItemDto,
-    image: Express.Multer.File | null | undefined,
-  ) {
-    const data: any = { ...dto };
+async update(
+  id: string,
+  dto: UpdateFoodItemDto,
+  imageUrl?: string,
+): Promise<MenuItem> {
+  const {
+    name,
+    description,
+    price,
+    categoryId,
+    available,
+    popular,
+    allergies,
+    dietary,
+    restaurantId,
+  } = dto;
+  const updatedItem = await this.prisma.$transaction(async (tx) => {
+    if (restaurantId) {
+      const restaurant = await tx.restaurant.findUnique({
+        where: { id: restaurantId },
+      });
+      if (!restaurant) {
+        throw new Error(`Restaurant with ID ${restaurantId} does not exist`);
+      }
+    }
 
-    return this.prisma.menuItem.update({
+    const data: any = {
+      name,
+      description,
+      price,
+      categoryId,
+      available,
+      popular,
+      allergies,
+      dietary,
+      restaurantId,
+    };
+    if (imageUrl) {
+      data.image = imageUrl;
+    }
+    Object.keys(data).forEach(
+      (key) => data[key] === undefined && delete data[key]
+    );
+
+    return tx.menuItem.update({
       where: { id },
       data,
     });
-  }
+  });
 
+  return updatedItem;
+}
   async findAll() {
     return this.prisma.menuItem.findMany({
       include: { restaurant: true },
