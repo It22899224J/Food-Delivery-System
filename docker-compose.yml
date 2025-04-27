@@ -101,7 +101,34 @@ services:
     networks:
       - app-network
 
+# New Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+    ports:
+      - '3006:3006'
+    depends_on:
+      - auth-db
+    environment:
+      DATABASE_URL: postgres://postgres:password@auth-db:5432/auth
+    networks:
+      - app-network
 
+  auth-db:
+    image: postgres:15
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth
+    ports:
+      - '5436:5432'
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
 networks:
   app-network:

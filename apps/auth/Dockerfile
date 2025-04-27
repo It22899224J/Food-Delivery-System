@@ -1,6 +1,22 @@
-FROM node:18
+FROM node:18-alpine AS build
+
 WORKDIR /usr/src/app
+
+# Copy application code
 COPY . .
-RUN npm install
-RUN npm run build
-CMD ["node", "dist/apps/auth/main"]
+
+# Install build dependencies for bcrypt
+RUN apk add --no-cache make gcc g++ python3 && \
+    npm install && \
+    npm rebuild bcrypt --build-from-source && \
+    apk del make gcc g++ python3
+
+# Generate Prisma Client
+RUN npx prisma generate --schema=apps/auth/prisma/schema.prisma
+
+# Build the application
+RUN npm run build:auth
+
+EXPOSE 3006
+
+CMD ["/bin/sh", "-c", "npx prisma migrate deploy --schema=apps/auth/prisma/schema.prisma && npm run start:auth:prod"]

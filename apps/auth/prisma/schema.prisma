@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:password@auth-db:5432/auth"
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String
+  password    String
+  email       String @unique
+  contact     String
+  address     String
+  role        USER_ROLE @default(CUSTOMER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  driver      Driver?
+}
+
+model Driver {
+  id          Int     @id @default(autoincrement())
+  location    String
+  isAvailable Boolean @default(false)
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int     @unique
+}
+
+enum USER_ROLE {
+  CUSTOMER
+  RESTAURANT_ADMIN
+  DRIVER
+  SUPER_ADMIN
+}
