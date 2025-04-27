@@ -141,3 +141,4 @@ volumes:
   restaurant_db_data:
   delivery_db_data:
   order_db_data:
+  auth_db_data:
