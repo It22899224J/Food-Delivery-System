@@ -6,6 +6,7 @@ import { FoodItemService } from './food-item.service';
 import * as multer from 'multer'; // Correct import for multer
 import { MulterModule } from '@nestjs/platform-express';
 import { ImageUploadService } from './image-upload.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ImageUploadService } from './image-upload.service';
       storage: multer.memoryStorage(), 
       limits: { fileSize: 5 * 1024 * 1024 }, // size limit (5MB)
     }),
+   HttpModule
   ],
   controllers: [RestaurantController, FoodItemController],
   providers: [RestaurantService, FoodItemService,ImageUploadService],
