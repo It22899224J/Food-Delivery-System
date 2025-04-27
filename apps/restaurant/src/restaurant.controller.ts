@@ -57,4 +57,19 @@ export class RestaurantController {
     console.log(`Delete Restaurant by ID: ${id}`);
     return this.restaurantService.remove(id);
   }
+
+
+  @Get(':id/orders')
+  async getOrders(@Param('id') restaurantId: string) {
+    return this.restaurantService.getOrdersByRestaurantId(restaurantId);
+  }
+
+  @Put('orders/:orderId/status')
+  async updateOrderStatus(
+    @Param('orderId') orderId: string,
+    @Body() updateDto: any,
+  ) {
+    return this.restaurantService.updateOrderStatus(orderId, updateDto);
+  }
+
 }
