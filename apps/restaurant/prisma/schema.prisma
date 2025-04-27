@@ -8,11 +8,23 @@ datasource db {
 }
 
 model Restaurant {
-  id          Int     @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
   description String
   location    String
   availability Boolean
   phone       String
   email       String
+  foodItems   FoodItem[] 
 }
+
+model FoodItem {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String
+  price         Float
+  availableCount          Int
+  restaurantId  Int
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
