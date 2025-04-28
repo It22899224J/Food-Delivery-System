@@ -12,6 +12,7 @@ services:
       - delivery-service
       - order-service
       - payment-service
+      - auth-service
     networks:
       - app-network
 

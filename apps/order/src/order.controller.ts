@@ -13,8 +13,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 
-
-@Controller('orders')
+@Controller()
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
