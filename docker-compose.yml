@@ -56,7 +56,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:password@delivery-db:5432/delivery
       ORDER_SERVICE_URL: http://order-service:3004
-      RESTAURANT_SERVICE_URL: http://restaurant-service:3000
+      RESTAURANT_SERVICE_URL: http://restaurant:3000
     networks:
       - app-network
 

@@ -23,12 +23,12 @@ export class DeliveryEvents {
     this.logger.log('Delivery Events - Received order:created event with data:', JSON.stringify(data));
     try {
       this.logger.log(`Creating delivery for order ${data.orderId}`);
+
+      const restaurantDeatails = await this.deliveryService.getRestaurantDetails(data.restaurantId);
+
       const delivery = await this.deliveryService.createDelivery({
         orderId: data.orderId,
-        startLocation: {
-          lat: 6.937567543517400,
-          lng: 79.94650308629400
-        },
+        startLocation: restaurantDeatails.position,
         endLocation: data.deliveryAddress,
         estimatedTime: 30,
       });
