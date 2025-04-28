@@ -53,7 +53,7 @@ export class DeliveryService {
     const orderDetails = await this.getOrderDetails(createDto.orderId);
  
     // Get restaurant details to get the start location
-    const restaurantDeatails = await this.getRestaurantDetails(orderDetails.restaurantId);
+    const restaurantDeatails = await this.getRestaurantDetails(orderDetails.restaurantId ?? 'cma1coodu0000nr2gxd91y1rt');
     
     // Find available driver
     const availableDriver = await this.findAvailableDriver({ lat: 6, lng: 6 });
@@ -66,7 +66,7 @@ export class DeliveryService {
       data: {
         orderId: createDto.orderId,
         driverId: availableDriver.id,
-        startLocation: restaurantDeatails.position,
+        startLocation: restaurantDeatails.position || { lat: 6.927079, lng: 79.861244 },
         endLocation: {
           lat: parseFloat(orderDetails.deliveryAddress.split(',')[0]),
           lng: parseFloat(orderDetails.deliveryAddress.split(',')[1])

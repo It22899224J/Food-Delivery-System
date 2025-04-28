@@ -39,6 +39,7 @@ export class OrderService {
         userId: createOrderDto.userId,
         restaurantId: createOrderDto.restaurantId,
         deliveryAddress: createOrderDto.deliveryAddress,
+        deliveryInstructions: createOrderDto.deliveryInstructions,
         totalAmount: finalAmount,
         paymentStatus:
           (createOrderDto.paymentStatus as PaymentStatus) ||
