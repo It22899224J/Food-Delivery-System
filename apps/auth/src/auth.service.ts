@@ -16,8 +16,12 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = await this.prisma.user.create({
       data: {
-        ...createUserDto,
+        name: createUserDto.name,
+        email: createUserDto.email,
         password: hashedPassword,
+        contact: createUserDto.contact,
+        address: createUserDto.address,
+        role: createUserDto.role,
       },
     });
     return { message: 'User registered successfully', user };
@@ -60,7 +64,13 @@ export class AuthService {
   async updateUser(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.prisma.user.update({
       where: { id },
-      data: updateUserDto,
+      data: {
+        name: updateUserDto.name,
+        email: updateUserDto.email,
+        contact: updateUserDto.contact,
+        address: updateUserDto.address,
+        role: updateUserDto.role,
+      },
     });
     return { message: 'User updated successfully', user };
   }
@@ -68,13 +78,5 @@ export class AuthService {
   async deleteUser(id: number) {
     await this.prisma.user.delete({ where: { id } });
     return { message: 'User deleted successfully' };
-  }
-
-  async updateDriverLocation(id: number, location: string) {
-    const driver = await this.prisma.driver.update({
-      where: { userId: id },
-      data: { location },
-    });
-    return { message: 'Driver location updated successfully', driver };
   }
 }

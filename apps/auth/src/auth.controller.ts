@@ -56,12 +56,4 @@ export class AuthController {
   async getUsers() {
     return this.authService.getUsers();
   }
-
-  @Patch('drivers/:id/location')
-  async updateDriverLocation(
-    @Param('id') id: number,
-    @Body() locationData: { location: string },
-  ) {
-    return this.authService.updateDriverLocation(id, locationData.location);
-  }
 }

@@ -116,7 +116,7 @@ services:
     depends_on:
       - auth-db
     environment:
-      DATABASE_URL: postgres://postgres:password@auth-db:5432/auth
+      DATABASE_URL: postgresql://postgres:password@auth-db:5432/auth
     networks:
       - app-network
 

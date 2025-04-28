@@ -4,8 +4,8 @@ export class CreateUserDto {
   name: string;
   password: string;
   email: string;
+  contact: string;
   address: string;
   role?: USER_ROLE = USER_ROLE.CUSTOMER;
-  contact: string;
   updatedAt?: Date;
 }
