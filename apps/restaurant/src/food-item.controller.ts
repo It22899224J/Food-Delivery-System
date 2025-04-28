@@ -19,12 +19,12 @@ export class FoodItemController {
   constructor(private readonly foodItemService: FoodItemService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image')) // 'image' is the name of the file field
+  @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createFoodItemDto: CreateFoodItemDto,
-    @UploadedFile() image: Express.Multer.File, // Handle the uploaded image
+    @UploadedFile() image: Express.Multer.File,
   ) {
-    return this.foodItemService.create(createFoodItemDto, image); // Pass the image to service
+    return this.foodItemService.create(createFoodItemDto, image);
   }
 
   @Get()
@@ -33,22 +33,22 @@ export class FoodItemController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
-    return this.foodItemService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return this.foodItemService.findOne(id);
   }
 
   @Put(':id')
-  @UseInterceptors(FileInterceptor('image')) // For updating with image upload support
+  @UseInterceptors(FileInterceptor('image'))
   async update(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateFoodItemDto: UpdateFoodItemDto,
-    @UploadedFile() image: Express.Multer.File, // Handle the uploaded image
+    @UploadedFile() image: Express.Multer.File,
   ) {
-    return this.foodItemService.update(+id, updateFoodItemDto, image); // Pass the image to service
+    return this.foodItemService.update(id, updateFoodItemDto, image);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    return this.foodItemService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return this.foodItemService.remove(id);
   }
 }

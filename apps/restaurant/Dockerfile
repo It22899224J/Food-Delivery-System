@@ -18,14 +18,17 @@ COPY . .
 # Step 6: Generate Prisma client
 RUN npx prisma generate --schema=apps/restaurant/prisma/schema.prisma
 
-# Step 7: Build the specific microservice
+# Step 7: Run Prisma migration (applies all pending migrations)
+#RUN npx prisma migrate deploy --schema=apps/restaurant/prisma/schema.prisma
+
+# Step 8: Build the specific microservice
 RUN npm run build:restaurant
 
-# Step 8: Expose app port
+# Step 9: Expose app port
 EXPOSE 3000
 
-# Step 9: Set environment variable (optional but nice)
+# Step 10: Set environment variable (optional but nice)
 ENV PORT=3000
 
-# Step 10: Run the application
+# Step 11: Run the application in production mode
 CMD ["npm", "run", "start:restaurant:prod"]

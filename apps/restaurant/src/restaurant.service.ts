@@ -19,17 +19,17 @@ export class RestaurantService {
   }
 
   // Find a specific restaurant by ID
-  async findOne(id: number) {
+  async findOne(id: string) {
     return this.prisma.restaurant.findUnique({
       where: { id },
       include: {
-      foodItems: true,
+        menuItems: true,
       },
     });
   }
 
   // Update a restaurant by ID
-  async update(id: number, data: UpdateRestaurantDto) {
+  async update(id: string, data: UpdateRestaurantDto) {
     return this.prisma.restaurant.update({
       where: { id },
       data,
@@ -37,7 +37,7 @@ export class RestaurantService {
   }
 
   // Delete a restaurant by ID
-  async remove(id: number) {
+  async remove(id: string) {
     return this.prisma.restaurant.delete({ where: { id } });
   }
 }

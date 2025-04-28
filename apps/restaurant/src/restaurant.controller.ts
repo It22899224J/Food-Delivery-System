@@ -28,14 +28,14 @@ export class RestaurantController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     console.log(`Find Restaurant by ID: ${id}`);
     return this.restaurantService.findOne(id);
   }
 
   @Put(':id')
   async update(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateRestaurantDto: UpdateRestaurantDto,
   ) {
     console.log(`Update Restaurant by ID: ${id}`);
@@ -43,7 +43,7 @@ export class RestaurantController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     console.log(`Delete Restaurant by ID: ${id}`);
     return this.restaurantService.remove(id);
   }

@@ -18,18 +18,18 @@ export class FoodItemService {
     createFoodItemDto: CreateFoodItemDto,
     image: Express.Multer.File,
   ) {
-    const imageBuffer = await this.processImage(image); // Process the image
+    const imageBuffer = await this.processImage(image);
 
-    return this.prisma.foodItem.create({
+    return this.prisma.menuItem.create({
       data: {
         ...createFoodItemDto,
-        image: imageBuffer, // Store the binary image data
+        image: imageBuffer,
       },
     });
   }
 
   async update(
-    id: number,
+    id: string,
     updateFoodItemDto: UpdateFoodItemDto,
     image: Express.Multer.File | null,
   ) {
@@ -40,22 +40,22 @@ export class FoodItemService {
       data.image = imageBuffer; // Add or update image if provided
     }
 
-    return this.prisma.foodItem.update({
+    return this.prisma.menuItem.update({
       where: { id },
       data,
     });
   }
 
   async findAll() {
-    return this.prisma.foodItem.findMany({
+    return this.prisma.menuItem.findMany({
       include: {
         restaurant: true,
       },
     });
   }
 
-  async findOne(id: number) {
-    return this.prisma.foodItem.findUnique({
+  async findOne(id: string) {
+    return this.prisma.menuItem.findUnique({
       where: { id },
       include: {
         restaurant: true,
@@ -63,8 +63,8 @@ export class FoodItemService {
     });
   }
 
-  async remove(id: number) {
-    return this.prisma.foodItem.delete({
+  async remove(id: string) {
+    return this.prisma.menuItem.delete({
       where: { id },
     });
   }

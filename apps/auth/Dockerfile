@@ -6,11 +6,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 # Install build dependencies for bcrypt
-RUN apk add --no-cache make gcc g++ python3 && \
-    npm install && \
-    npm rebuild bcrypt --build-from-source && \
-    apk del make gcc g++ python3
-
+RUN npm install 
 # Generate Prisma Client
 RUN npx prisma generate --schema=apps/auth/prisma/schema.prisma
 
