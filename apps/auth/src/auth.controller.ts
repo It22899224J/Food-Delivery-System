@@ -56,4 +56,12 @@ export class AuthController {
   async getUsers() {
     return this.authService.getUsers();
   }
+
+  @Post('driver/login')
+  async driverLogin(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.driverLogin(email, password);
+  }
 }

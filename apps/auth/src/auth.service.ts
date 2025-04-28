@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { USER_ROLE } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
@@ -40,7 +41,7 @@ export class AuthService {
       return { message: 'Invalid credentials', token: null };
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { ...user };
     const token = this.jwtService.sign(payload);
 
     return { message: 'Login successful', token };
@@ -54,6 +55,30 @@ export class AuthService {
     }
 
     return { message: 'User fetched successfully', user };
+  }
+
+  async driverLogin(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return { message: 'Driver not found', token: null };
+    }
+
+    if (user.role !== USER_ROLE.DRIVER) {
+      return { message: 'Account is not a driver', token: null };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return { message: 'Invalid credentials', token: null };
+    }
+
+    const payload = { ...user };
+    const token = this.jwtService.sign(payload);
+
+    return { message: 'Driver login successful', token };
   }
 
   async getUsers() {
