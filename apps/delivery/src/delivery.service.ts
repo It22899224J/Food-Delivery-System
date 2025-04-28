@@ -4,6 +4,8 @@ import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
+import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
+import { UpdateDriverLocationDto } from './dto/update-drivery-location.dto';
 
 @Injectable()
 export class DeliveryService {
@@ -45,7 +47,7 @@ export class DeliveryService {
       updateData.pickedUpAt = new Date();
     } else if (updateDto.status === 'DELIVERED') {
       updateData.deliveredAt = new Date();
-    }
+    } 
 
     return this.prisma.delivery.update({
       where: { id },
@@ -94,6 +96,45 @@ export class DeliveryService {
       data: updateDto,
     });
   }
+
+  async updateDriverAvailability(id: string, updateDto: UpdateDriverAvailabilityDto) {
+    return this.prisma.driver.update({
+      where: { id },
+      data: { isAvailable: updateDto.isAvailable },
+    });
+  }
+
+  async updateDriverLocation(id: string, updateDto: UpdateDriverLocationDto) {
+    // find the driver's active delivery
+    const activeDelivery = await this.prisma.delivery.findFirst({
+      where: {
+        driverId: id,
+        status: {
+          in: ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT']
+        }
+      }
+    });
+
+    // Update driver's location
+    await this.prisma.driver.update({
+      where: { id },
+      data: { location: { lat: updateDto.latitude, lng: updateDto.longitude } },
+    });
+
+    // If there's an active delivery, update its current location too
+    if (activeDelivery) {
+      await this.prisma.delivery.update({
+        where: { id: activeDelivery.id },
+        data: { currentLocation: { lat: updateDto.latitude, lng: updateDto.longitude } },
+      });
+    }
+
+    return { 
+      message: 'Driver location updated successfully',
+      driverId: id,
+      location: { lat: updateDto.latitude, lng: updateDto.longitude }
+    };
+}
 
   async findAllDrivers() {
     return this.prisma.driver.findMany({

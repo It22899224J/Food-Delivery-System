@@ -12,6 +12,8 @@ import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
+import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
+import { UpdateDriverLocationDto } from './dto/update-drivery-location.dto';
 
 @Controller()
 export class DeliveryController {
@@ -61,4 +63,15 @@ export class DeliveryController {
   updateDriver(@Param('id') id: string, @Body() updateDto: UpdateDriverDto) {
     return this.deliveryService.updateDriver(id, updateDto);
   }
+
+  @Patch('drivers/:id/availability')
+  updateDriverAvailability(@Param('id') id: string,@Body() updateDto: UpdateDriverAvailabilityDto,){
+    return this.deliveryService.updateDriverAvailability(id, updateDto);
+  }
+
+  @Patch('drivers/:id/location')
+  updateDriverLocation(@Param('id') id: string,@Body() updateDto: UpdateDriverLocationDto,){
+    return this.deliveryService.updateDriverLocation(id, updateDto);
+  }
+
 }
