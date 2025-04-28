@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable} from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { PrismaClient } from '@prisma/client'; // Import Prisma Client from generated client
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { firstValueFrom } from 'rxjs';
 
 
 @Injectable()
 export class RestaurantService {
   private prisma = new PrismaClient(); // Instantiate Prisma Client
+  constructor(private readonly httpService: HttpService) {}
+
+
+  // You can move this outside the class if it's a constant for the file
+  private API_URL_ORDER = "http://order-service:3004";
 
   // Create a new restaurant
   async create(data: CreateRestaurantDto) {
@@ -60,4 +67,17 @@ async findOneByOwner(ownerId: string) {
   async remove(id: string) {
     return this.prisma.restaurant.delete({ where: { id } });
   }
+
+  async getOrdersByRestaurantId(restaurantId: string) {
+    const url = `${this.API_URL_ORDER}/restaurant/${restaurantId}`;
+    const response = await firstValueFrom(this.httpService.get(url));
+    return response.data;
+  }
+
+  async updateOrderStatus(orderId: string, updateDto: any) {
+    const url = `${this.API_URL_ORDER}/${orderId}/status`;
+    const response = await firstValueFrom(this.httpService.patch(url, updateDto));
+    return response.data;
+  }
+  
 }
