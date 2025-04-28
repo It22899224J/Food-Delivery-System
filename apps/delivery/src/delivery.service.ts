@@ -15,14 +15,14 @@ import { Restaurant } from './interfaces/restaurant.interface';
 export class DeliveryService {
   private prisma = new PrismaClient();
   private readonly orderServiceUrl = process.env.ORDER_SERVICE_URL || 'http://order-service:3004';
-  private readonly restaurantServiceUrl = process.env.RESTAURANT_SERVICE_URL || 'http://restaurant-service:3000';
+  private readonly restaurantServiceUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3000';
   
   constructor(private readonly httpService: HttpService) {}
 
   async getOrderDetails(orderId: string): Promise<Order> {
     try {
       const response = await firstValueFrom(
-        this.httpService.get<Order>(`${this.orderServiceUrl}/orders/${orderId}`)
+        this.httpService.get<Order>(`${this.orderServiceUrl}/${orderId}`)
       );
       return response.data;
     } catch (error) {
@@ -51,9 +51,9 @@ export class DeliveryService {
   async createDelivery(createDto: CreateDeliveryDto) {
     // Get order details first
     const orderDetails = await this.getOrderDetails(createDto.orderId);
-    
+ 
     // Get restaurant details to get the start location
-    // const restaurantDetails = await this.getRestaurantDetails(orderDetails.restaurantId);
+    const restaurantDeatails = await this.getRestaurantDetails(orderDetails.restaurantId);
     
     // Find available driver
     const availableDriver = await this.findAvailableDriver({ lat: 6, lng: 6 });
@@ -66,10 +66,7 @@ export class DeliveryService {
       data: {
         orderId: createDto.orderId,
         driverId: availableDriver.id,
-        startLocation: {
-          lat: "6.937567543517400",
-          lng: "79.94650308629400"
-        },
+        startLocation: restaurantDeatails.position,
         endLocation: {
           lat: parseFloat(orderDetails.deliveryAddress.split(',')[0]),
           lng: parseFloat(orderDetails.deliveryAddress.split(',')[1])
