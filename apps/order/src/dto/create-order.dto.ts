@@ -31,4 +31,10 @@ export class CreateOrderDto {
 
   @IsArray()
   items: OrderItemDto[];
+
+  paymentStatus: string;
+
+  paymentMethod: string;
+
+  deliveryFee?: number;
 }

@@ -1,9 +1,20 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { PrismaService } from './prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderStatusDto, OrderStatus } from './dto/update-order-status.dto';
-import { UpdatePaymentStatusDto, PaymentStatus } from './dto/update-payment-status.dto';
+import {
+  UpdateOrderStatusDto,
+  OrderStatus,
+} from './dto/update-order-status.dto';
+import {
+  UpdatePaymentStatusDto,
+  PaymentStatus,
+} from './dto/update-payment-status.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -11,7 +22,7 @@ export class OrderService {
   constructor(
     private prisma: PrismaService,
     @Inject('DELIVERY_SERVICE') private deliveryClient: ClientProxy,
-  ) { }
+  ) {}
 
   async createOrder(createOrderDto: CreateOrderDto) {
     const totalAmount = createOrderDto.items.reduce(
@@ -19,15 +30,20 @@ export class OrderService {
       0,
     );
 
+    // Add delivery fee to total amount
+    const deliveryFee = createOrderDto.deliveryFee || 0;
+    const finalAmount = totalAmount + deliveryFee;
+
     const order = await this.prisma.order.create({
       data: {
         userId: createOrderDto.userId,
         restaurantId: createOrderDto.restaurantId,
         deliveryAddress: createOrderDto.deliveryAddress,
-        totalAmount,
-        paymentMethod: "CARD",
+        totalAmount: finalAmount,
+        paymentStatus: (createOrderDto.paymentStatus as PaymentStatus) || PaymentStatus.PENDING,
+        paymentMethod: createOrderDto.paymentMethod,
         items: {
-          create: createOrderDto.items.map(item => ({
+          create: createOrderDto.items.map((item) => ({
             itemId: item.itemId,
             quantity: item.quantity,
             price: item.price,
@@ -106,9 +122,14 @@ export class OrderService {
 
   async updateOrderStatus(id: string, updateStatusDto: UpdateOrderStatusDto) {
     const order = await this.findOrderById(id);
-    
+
     // Validate status transition
-    if (!this.isValidStatusTransition(order.status as OrderStatus, updateStatusDto.status)) {
+    if (
+      !this.isValidStatusTransition(
+        order.status as OrderStatus,
+        updateStatusDto.status,
+      )
+    ) {
       throw new BadRequestException('Invalid status transition');
     }
 
@@ -131,7 +152,10 @@ export class OrderService {
     });
   }
 
-  async updatePaymentStatus(id: string, updatePaymentDto: UpdatePaymentStatusDto) {
+  async updatePaymentStatus(
+    id: string,
+    updatePaymentDto: UpdatePaymentStatusDto,
+  ) {
     await this.findOrderById(id);
 
     return this.prisma.order.update({
@@ -172,12 +196,21 @@ export class OrderService {
     });
   }
 
-  private isValidStatusTransition(currentStatus: OrderStatus, newStatus: OrderStatus): boolean {
+  private isValidStatusTransition(
+    currentStatus: OrderStatus,
+    newStatus: OrderStatus,
+  ): boolean {
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
       [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
       [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
-      [OrderStatus.PREPARING]: [OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELLED],
-      [OrderStatus.READY_FOR_PICKUP]: [OrderStatus.ON_THE_WAY, OrderStatus.CANCELLED],
+      [OrderStatus.PREPARING]: [
+        OrderStatus.READY_FOR_PICKUP,
+        OrderStatus.CANCELLED,
+      ],
+      [OrderStatus.READY_FOR_PICKUP]: [
+        OrderStatus.ON_THE_WAY,
+        OrderStatus.CANCELLED,
+      ],
       [OrderStatus.ON_THE_WAY]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
       [OrderStatus.DELIVERED]: [],
       [OrderStatus.CANCELLED]: [],
