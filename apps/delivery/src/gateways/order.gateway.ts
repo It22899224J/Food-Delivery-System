@@ -47,14 +47,13 @@ export class OrderGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       // Get order details from Order service
       const orderDetails = await this.deliveryService.getOrderDetails(payload.orderId);
+
+      const restaurantDeatails = await this.deliveryService.getRestaurantDetails(payload.restaurantId);
       
       // Create delivery with hardcoded start location
       const delivery = await this.deliveryService.createDelivery({
         orderId: payload.orderId,
-        startLocation: {
-          lat: 6.937567543517400,
-          lng: 79.94650308629400
-        },
+        startLocation: restaurantDeatails.position,
         endLocation: payload.deliveryAddress,
         estimatedTime: payload.estimatedTime,
       });
@@ -71,10 +70,7 @@ export class OrderGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server.emit(`driver:${delivery.driverId}:assigned`, {
           deliveryId: delivery.id,
           orderId: payload.orderId,
-          pickup: {
-            lat: "6.937567543517400",
-            lng: "79.94650308629400"
-          },
+          pickup: restaurantDeatails.position,
           dropoff: payload.deliveryAddress,
         });
       }

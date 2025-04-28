@@ -56,7 +56,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:password@delivery-db:5432/delivery
       ORDER_SERVICE_URL: http://order-service:3004
-      RESTAURANT_SERVICE_URL: http://restaurant-service:3000
+      RESTAURANT_SERVICE_URL: http://restaurant:3000
     networks:
       - app-network
 
@@ -146,6 +146,18 @@ services:
     environment:
       PORT: 3006
       STRIPE_SECRET_KEY: "sk_test_51RIb3MBVWky9Ykn8nJ05XPR7CtXLmQPYCNsLatmYaxjrXrYSMQ2XD6HuWVt6AL653JJRGiaaadbJaeJ3QaYpPEJD00RqhT1Fqo"
+    networks:
+      - app-network
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification/Dockerfile
+    ports:
+      - "3015:3015"
+    environment:
+      PORT: 3015
+      EMAIL_USER: "reshangomis@gmail.com"
+      EMAIL_PASSWORD: "rwkt kmuo zvoa loiz"
     networks:
       - app-network
 

@@ -40,7 +40,9 @@ export class OrderService {
         restaurantId: createOrderDto.restaurantId,
         deliveryAddress: createOrderDto.deliveryAddress,
         totalAmount: finalAmount,
-        paymentStatus: (createOrderDto.paymentStatus as PaymentStatus) || PaymentStatus.PENDING,
+        paymentStatus:
+          (createOrderDto.paymentStatus as PaymentStatus) ||
+          PaymentStatus.PENDING,
         paymentMethod: createOrderDto.paymentMethod,
         items: {
           create: createOrderDto.items.map((item) => ({

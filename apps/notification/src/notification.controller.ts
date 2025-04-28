@@ -1,12 +1,43 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 
-@Controller()
+@Controller('notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  @Get()
-  getHello(): string {
-    return this.notificationService.getHello();
+  @Post('driver/order')
+  async notifyDriver(@Body() data: { email: string; orderDetails: any }) {
+    return this.notificationService.sendDriverOrderNotification(
+      data.email,
+      data.orderDetails,
+    );
+  }
+
+  @Post('customer/confirmation')
+  async notifyCustomerConfirmation(
+    @Body() data: { email: string; orderDetails: any },
+  ) {
+    return this.notificationService.sendCustomerOrderConfirmation(
+      data.email,
+      data.orderDetails,
+    );
+  }
+
+  @Post('customer/delivered')
+  async notifyCustomerDelivered(
+    @Body() data: { email: string; orderDetails: any },
+  ) {
+    return this.notificationService.sendCustomerDeliveryComplete(
+      data.email,
+      data.orderDetails,
+    );
+  }
+
+  @Post('restaurant/order')
+  async notifyRestaurant(@Body() data: { email: string; orderDetails: any }) {
+    return this.notificationService.sendRestaurantOrderNotification(
+      data.email,
+      data.orderDetails,
+    );
   }
 }
