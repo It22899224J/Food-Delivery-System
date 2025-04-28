@@ -74,4 +74,9 @@ export class DeliveryController {
     return this.deliveryService.updateDriverLocation(id, updateDto);
   }
 
+  @Get('deliveries/orders/:orderId')
+  findDeliveryByOrderId(@Param('orderId') orderId: string) {
+    return this.deliveryService.findDeliveryByOrderId(orderId);
+  }
+
 }

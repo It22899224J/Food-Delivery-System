@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { PrismaService } from './prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto, OrderStatus } from './dto/update-order-status.dto';
@@ -7,7 +8,10 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject('DELIVERY_SERVICE') private deliveryClient: ClientProxy,
+  ) { }
 
   async createOrder(createOrderDto: CreateOrderDto) {
     const totalAmount = createOrderDto.items.reduce(
@@ -15,36 +19,44 @@ export class OrderService {
       0,
     );
 
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         userId: createOrderDto.userId,
         restaurantId: createOrderDto.restaurantId,
-        status: OrderStatus.PENDING,
-        totalAmount,
-        paymentStatus: PaymentStatus.PENDING,
-        paymentMethod: 'CARD',
         deliveryAddress: createOrderDto.deliveryAddress,
-        deliveryInstructions: createOrderDto.deliveryInstructions,
+        totalAmount,
+        paymentMethod: "CARD",
         items: {
-          create: createOrderDto.items.map((item) => ({
+          create: createOrderDto.items.map(item => ({
             itemId: item.itemId,
             quantity: item.quantity,
             price: item.price,
             specialInstructions: item.specialInstructions,
           })),
         },
-        statusHistory: {
-          create: {
-            newStatus: OrderStatus.PENDING,
-            changedBy: 'system',
-          },
-        },
       },
       include: {
         items: true,
-        statusHistory: true,
       },
     });
+
+    //Emit event to delivery service
+    try {
+      const payload = {
+        orderId: order.id,
+        restaurantId: order.restaurantId,
+        deliveryAddress: {
+          lat: parseFloat(order.deliveryAddress.split(',')[0]),
+          lng: parseFloat(order.deliveryAddress.split(',')[1]),
+        },
+      };
+      console.log('Emitting order:created event with payload:', payload);
+      this.deliveryClient.emit('order:created', payload);
+    } catch (error) {
+      console.error('Error emitting order:created event:', error);
+    }
+
+    return order;
   }
 
   async findAllOrders() {

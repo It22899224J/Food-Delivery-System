@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { PrismaClient, DeliveryStatus, VehicleType } from '@prisma/client';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
@@ -6,24 +7,73 @@ import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { UpdateDriverAvailabilityDto } from './dto/update-driver-availability.dto';
 import { UpdateDriverLocationDto } from './dto/update-drivery-location.dto';
+import { firstValueFrom } from 'rxjs';
+import { Order } from './interfaces/order.interface';
+import { Restaurant } from './interfaces/restaurant.interface';
 
 @Injectable()
 export class DeliveryService {
   private prisma = new PrismaClient();
+  private readonly orderServiceUrl = process.env.ORDER_SERVICE_URL || 'http://order-service:3004';
+  private readonly restaurantServiceUrl = process.env.RESTAURANT_SERVICE_URL || 'http://restaurant-service:3000';
+  
+  constructor(private readonly httpService: HttpService) {}
+
+  async getOrderDetails(orderId: string): Promise<Order> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<Order>(`${this.orderServiceUrl}/orders/${orderId}`)
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        throw new NotFoundException(`Order with ID ${orderId} not found`);
+      }
+      throw error;
+    }
+  }
+
+  async getRestaurantDetails(restaurantId: string): Promise<Restaurant> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<Restaurant>(`${this.restaurantServiceUrl}/restaurants/${restaurantId}`)
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        throw new NotFoundException(`Restaurant with ID ${restaurantId} not found`);
+      }
+      throw error;
+    }
+  }
 
   // Delivery methods
   async createDelivery(createDto: CreateDeliveryDto) {
-    const availableDriver = await this.findAvailableDriver(createDto.startLocation);
+    // Get order details first
+    const orderDetails = await this.getOrderDetails(createDto.orderId);
+    
+    // Get restaurant details to get the start location
+    // const restaurantDetails = await this.getRestaurantDetails(orderDetails.restaurantId);
+    
+    // Find available driver
+    const availableDriver = await this.findAvailableDriver({ lat: 6, lng: 6 });
     if (!availableDriver) {
       throw new NotFoundException('No available drivers found');
     }
 
+    // Create the delivery with restaurant position as start location
     return this.prisma.delivery.create({
       data: {
         orderId: createDto.orderId,
         driverId: availableDriver.id,
-        startLocation: createDto.startLocation,
-        endLocation: createDto.endLocation,
+        startLocation: {
+          lat: "6.937567543517400",
+          lng: "79.94650308629400"
+        },
+        endLocation: {
+          lat: parseFloat(orderDetails.deliveryAddress.split(',')[0]),
+          lng: parseFloat(orderDetails.deliveryAddress.split(',')[1])
+        },
         status: 'ASSIGNED',
         assignedAt: new Date(),
         estimatedTime: createDto.estimatedTime,
@@ -148,6 +198,19 @@ export class DeliveryService {
       throw new NotFoundException(`Driver with ID ${id} not found`);
     }
     return driver;
+  }
+
+  async findDeliveryByOrderId(orderId: string) {
+    const delivery = await this.prisma.delivery.findFirst({ 
+      where: { orderId },
+      include: { driver: true },
+    });
+
+    if (!delivery) {
+      throw new NotFoundException(`Delivery with order ID ${orderId} not found`);
+    }
+
+    return delivery;
   }
 
   async findAvailableDrivers() {
