@@ -13,6 +13,6 @@ RUN npx prisma generate --schema=apps/auth/prisma/schema.prisma
 # Build the application
 RUN npm run build:auth
 
-EXPOSE 3006
+EXPOSE 3012
 
 CMD ["/bin/sh", "-c", "npx prisma migrate deploy --schema=apps/auth/prisma/schema.prisma && npm run start:auth:prod"]

@@ -108,7 +108,7 @@ services:
       context: .
       dockerfile: apps/auth/Dockerfile
     ports:
-      - '3006:3006'
+      - '3012:3012'
     depends_on:
       - auth-db
     environment:
