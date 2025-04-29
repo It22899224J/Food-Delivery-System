@@ -15,6 +15,11 @@ export class PaymentController {
     return this.paymentService.getPaymentsByUserId(userId);
   }
 
+  @Get('restaurant/:restaurantId')
+  async getPaymentsByRestaurantId(@Param('restaurantId') restaurantId: string) {
+    return this.paymentService.getPaymentsByRestaurantId(restaurantId);
+  }
+
   @Post('create-intent')
   async createPaymentIntent(
     @Body() body: { amount: number; currency?: string },
@@ -62,6 +67,7 @@ export class PaymentController {
       userId: string;
       amount: number;
       currency?: string;
+      restaurantId: string;
     },
   ) {
     return this.paymentService.savePayment(body);

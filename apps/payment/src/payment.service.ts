@@ -107,6 +107,7 @@ export class PaymentService {
     userId: string;
     amount: number;
     currency?: string;
+    restaurantId: string;
   }) {
     try {
       // Create a new payment record in the database using Prisma
@@ -117,6 +118,7 @@ export class PaymentService {
           userId: data.userId,
           amount: data.amount,
           currency: data.currency || 'USD',
+          restaurantId: data.restaurantId,
         },
       });
 
@@ -164,6 +166,30 @@ export class PaymentService {
     } catch (error) {
       throw new Error(
         `Error retrieving payments for user ${userId}: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Get payments by user ID
+   * @param restaurantId
+   * @returns Payment records for the specified user
+   */
+  async getPaymentsByRestaurantId(restaurantId: string) {
+    try {
+      const payments = await this.prisma.payment.findMany({
+        where: {
+          restaurantId: restaurantId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      return payments;
+    } catch (error) {
+      throw new Error(
+        `Error retrieving payments for restaurant ${restaurantId}: ${error.message}`,
       );
     }
   }
