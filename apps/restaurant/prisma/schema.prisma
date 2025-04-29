@@ -15,11 +15,11 @@ model Restaurant {
   position    Json
   phone       String
   email       String
-  logo        String
-  banner      String
+  logo        String?
   cuisineType String[]
-  rating      Float
+  rating      Float?
   isActive    Boolean
+  ownerId     String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

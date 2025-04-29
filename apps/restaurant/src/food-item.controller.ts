@@ -21,7 +21,7 @@ import { ImageUploadService } from './image-upload.service';
 export class FoodItemController {
   constructor(
     private readonly foodItemService: FoodItemService,
-    private readonly imageUploadService: ImageUploadService, // Inject Image Upload Service
+    private readonly imageUploadService: ImageUploadService, 
   ) {}
 
   @Post()
@@ -34,7 +34,6 @@ export class FoodItemController {
       throw new Error('Request body is null or undefined');
     }
   
-    // Parse text fields from FormData
     const dto = {
       name: body.name,
       description: body.description,
@@ -51,7 +50,7 @@ export class FoodItemController {
     if (image) {
       imageUrl = await this.imageUploadService.uploadImage(image.buffer.toString('base64'));
     } else if (body.image) {
-      // Fallback for base64 string sent as text field
+
       imageUrl = await this.imageUploadService.uploadImage(body.image);
     }
   

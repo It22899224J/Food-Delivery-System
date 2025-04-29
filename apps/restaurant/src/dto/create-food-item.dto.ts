@@ -21,8 +21,6 @@ export class CreateFoodItemDto {
   @Type(() => Number)
   price: number;
 
-  // Removed image: Buffer — now handled via @UploadedFile()
-
   @IsString()
   @IsNotEmpty()
   categoryId: string;
@@ -37,7 +35,7 @@ export class CreateFoodItemDto {
 
   @IsString()
   @IsOptional()
-  image?: string; // Base64 image string
+  image?: string; 
   
   @IsOptional()
   @IsArray()

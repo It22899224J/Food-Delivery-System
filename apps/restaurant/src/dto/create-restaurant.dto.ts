@@ -2,12 +2,12 @@ export class CreateRestaurantDto {
   name: string;
   description: string;
   address: string;
-  position: { lat: number; lng: number }; // Position as latitude and longitude
+  position: { lat: number; lng: number }; 
   phone: string;
   email: string;
-  logo: string;
-  banner: string;
-  cuisineType: string[]; // Array of cuisine types
-  rating: number;
+  logo?: string;
+  cuisineType: string[]; 
+  rating?: number;
   isActive: boolean;
+  ownerId:  string; 
 }

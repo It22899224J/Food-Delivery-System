@@ -10,8 +10,8 @@ import { ImageUploadService } from './image-upload.service';
 @Module({
   imports: [
     MulterModule.register({
-      storage: multer.memoryStorage(), // Enables .buffer on uploaded files
-      limits: { fileSize: 5 * 1024 * 1024 }, // Optional size limit (5MB)
+      storage: multer.memoryStorage(), 
+      limits: { fileSize: 5 * 1024 * 1024 }, // size limit (5MB)
     }),
   ],
   controllers: [RestaurantController, FoodItemController],

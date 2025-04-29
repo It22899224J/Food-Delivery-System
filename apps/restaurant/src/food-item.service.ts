@@ -2,38 +2,55 @@ import { Injectable } from '@nestjs/common';
 import { MenuItem, PrismaClient } from '@prisma/client';
 import { CreateFoodItemDto } from './dto/create-food-item.dto';
 import { UpdateFoodItemDto } from './dto/update-food-item.dto';
-import { v4 as uuidv4 } from 'uuid';
-import * as path from 'path';
-
 @Injectable()
 export class FoodItemService {
   private prisma = new PrismaClient();
 
-
-
-  // Method to create a food item, accepting the DTO and image URL
   async create(dto: CreateFoodItemDto, imageUrl: string): Promise<any> {
-    const { name, description, price, categoryId, available, popular, allergies, dietary, restaurantId } = dto;
+    const {
+      name,
+      description,
+      price,
+      categoryId,
+      available,
+      popular,
+      allergies,
+      dietary,
+      restaurantId,
+    } = dto;
 
-    // Create a new menu item in the database using Prisma
-    const newItem = await this.prisma.menuItem.create({
-      data: {
-        name,
-        description,
-        price,
-        image: imageUrl, // Store the image URL returned by Cloudinary
-        categoryId,
-        available,
-        popular,
-        allergies,
-        dietary,
-        restaurantId,
-      },
+    // Use a transaction to ensure consistency
+    const newItem = await this.prisma.$transaction(async (tx) => {
+      const restaurant = await tx.restaurant.findUnique({
+        where: { id: restaurantId },
+      });
+
+      if (!restaurant) {
+        throw new Error(`Restaurant with ID ${restaurantId} does not exist`);
+      }
+      return tx.menuItem.create({
+        data: {
+          name,
+          description,
+          price,
+          categoryId,
+          available,
+          popular,
+          allergies,
+          dietary,
+          restaurantId,
+          image: imageUrl,
+        },
+      });
     });
 
-    return newItem; // Return the created menu item
+    return newItem; 
   }
-  async update(id: string, dto: UpdateFoodItemDto, image: Express.Multer.File | null | undefined) {
+  async update(
+    id: string,
+    dto: UpdateFoodItemDto,
+    image: Express.Multer.File | null | undefined,
+  ) {
     const data: any = { ...dto };
 
     return this.prisma.menuItem.update({
@@ -48,11 +65,11 @@ export class FoodItemService {
     });
   }
 
-async findAllByRestaurant(restaurantId: string): Promise<MenuItem[]> {
-  return this.prisma.menuItem.findMany({
-    where: { restaurantId },
-  });
-}
+  async findAllByRestaurant(restaurantId: string): Promise<MenuItem[]> {
+    return this.prisma.menuItem.findMany({
+      where: { restaurantId },
+    });
+  }
 
   async findOne(id: string) {
     return this.prisma.menuItem.findUnique({
