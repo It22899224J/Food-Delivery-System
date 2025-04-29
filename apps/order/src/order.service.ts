@@ -127,14 +127,7 @@ export class OrderService {
     const order = await this.findOrderById(id);
 
     // Validate status transition
-    if (
-      !this.isValidStatusTransition(
-        order.status as OrderStatus,
-        updateStatusDto.status,
-      )
-    ) {
-      throw new BadRequestException('Invalid status transition');
-    }
+      
 
     return this.prisma.order.update({
       where: { id },
@@ -199,26 +192,26 @@ export class OrderService {
     });
   }
 
-  private isValidStatusTransition(
-    currentStatus: OrderStatus,
-    newStatus: OrderStatus,
-  ): boolean {
-    const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-      [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
-      [OrderStatus.PREPARING]: [
-        OrderStatus.READY_FOR_PICKUP,
-        OrderStatus.CANCELLED,
-      ],
-      [OrderStatus.READY_FOR_PICKUP]: [
-        OrderStatus.ON_THE_WAY,
-        OrderStatus.CANCELLED,
-      ],
-      [OrderStatus.ON_THE_WAY]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
-      [OrderStatus.DELIVERED]: [],
-      [OrderStatus.CANCELLED]: [],
-    };
+  // private isValidStatusTransition(
+  //   currentStatus: OrderStatus,
+  //   newStatus: OrderStatus,
+  // ): boolean {
+  //   const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+  //     [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+  //     [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+  //     [OrderStatus.PREPARING]: [
+  //       OrderStatus.READY_FOR_PICKUP,
+  //       OrderStatus.CANCELLED,
+  //     ],
+  //     [OrderStatus.READY_FOR_PICKUP]: [
+  //       OrderStatus.ON_THE_WAY,
+  //       OrderStatus.CANCELLED,
+  //     ],
+  //     [OrderStatus.ON_THE_WAY]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+  //     [OrderStatus.DELIVERED]: [],
+  //     [OrderStatus.CANCELLED]: [],
+  //   };
 
-    return validTransitions[currentStatus]?.includes(newStatus) ?? false;
-  }
+  //   return validTransitions[currentStatus]?.includes(newStatus) ?? false;
+  // }
 }
