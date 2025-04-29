@@ -21,7 +21,7 @@ export class NotificationService {
         from: process.env.EMAIL_USER,
         to,
         subject,
-        text,
+        html: text, // Changed from text to html
       };
 
       await this.transporter.sendMail(mailOptions);
@@ -46,19 +46,29 @@ export class NotificationService {
     try {
       const subject = 'New Order Assignment';
       const text = `
-        Hello Driver,
-
-        You have been assigned a new order:
-        Order ID: ${orderDetails.orderId}
-        Pickup Location: ${orderDetails.restaurantAddress}
-        Delivery Location: ${orderDetails.customerAddress}
-        Customer Contact: ${orderDetails.customerContact}
-
-        Please confirm the order pickup through your driver app.
-
-        Best regards,
-        Food Delivery Team
-    `;
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px; background-color: #f9f9f9;">
+          <h2 style="color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px;">New Order Assignment</h2>
+          
+          <div style="background-color: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
+            <h3 style="color: #2c3e50;">Hello Driver,</h3>
+            
+            <p style="color: #34495e;">You have been assigned a new order:</p>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 10px 0;">
+              <p style="margin: 5px 0;"><strong>Order ID:</strong> ${orderDetails.orderId}</p>
+              <p style="margin: 5px 0;"><strong>Pickup Location:</strong> ${orderDetails.restaurantAddress}</p>
+              <p style="margin: 5px 0;"><strong>Delivery Location:</strong> ${orderDetails.customerAddress}</p>
+              <p style="margin: 5px 0;"><strong>Customer Contact:</strong> ${orderDetails.customerContact}</p>
+            </div>
+            
+            <p style="color: #34495e; margin-top: 20px;">Please confirm the order pickup through your driver app.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #7f8c8d; font-size: 14px;">Best regards,<br>Food Delivery Team</p>
+            </div>
+          </div>
+        </div>
+      `;
       return await this.sendEmail(driverEmail, subject, text);
     } catch (error) {
       throw new HttpException(
@@ -72,23 +82,36 @@ export class NotificationService {
     }
   }
 
-  async sendCustomerOrderConfirmation(customerEmail: string, orderDetails: any) {
+  async sendCustomerOrderConfirmation(
+    customerEmail: string,
+    orderDetails: any,
+  ) {
     try {
       const subject = 'Order Confirmation';
       const text = `
-        Hello ${orderDetails.customerName},
-
-        Your order has been confirmed!
-        Order ID: ${orderDetails.orderId}
-        Restaurant: ${orderDetails.restaurantName}
-        Total Amount: $${orderDetails.totalAmount}
-        Estimated Delivery Time: ${orderDetails.estimatedDeliveryTime}
-
-        We'll notify you once your order is picked up by our driver.
-
-        Thank you for choosing our service!
-        Food Delivery Team
-    `;
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px; background-color: #f9f9f9;">
+          <h2 style="color: #2c3e50; text-align: center; border-bottom: 2px solid #27ae60; padding-bottom: 10px;">Order Confirmation</h2>
+          
+          <div style="background-color: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
+            <h3 style="color: #2c3e50;">Hello ${orderDetails.customerName},</h3>
+            
+            <p style="color: #27ae60; font-size: 18px;">Your order has been confirmed! 🎉</p>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #27ae60; margin: 10px 0;">
+              <p style="margin: 5px 0;"><strong>Order ID:</strong> ${orderDetails.orderId}</p>
+              <p style="margin: 5px 0;"><strong>Restaurant:</strong> ${orderDetails.restaurantName}</p>
+              <p style="margin: 5px 0;"><strong>Total Amount:</strong> $${orderDetails.totalAmount}</p>
+              <p style="margin: 5px 0;"><strong>Estimated Delivery:</strong> ${orderDetails.estimatedDeliveryTime}</p>
+            </div>
+            
+            <p style="color: #34495e; margin-top: 20px;">We'll notify you once your order is picked up by our driver.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #7f8c8d; font-size: 14px;">Thank you for choosing our service!<br>Food Delivery Team</p>
+            </div>
+          </div>
+        </div>
+      `;
       return await this.sendEmail(customerEmail, subject, text);
     } catch (error) {
       throw new HttpException(
@@ -106,17 +129,27 @@ export class NotificationService {
     try {
       const subject = 'Order Delivered';
       const text = `
-        Hello ${orderDetails.customerName},
-
-        Your order has been delivered!
-        Order ID: ${orderDetails.orderId}
-        Delivery Time: ${new Date().toLocaleString()}
-
-        We hope you enjoy your meal. Please rate your experience in our app.
-
-        Thank you for choosing our service!
-        Food Delivery Team
-    `;
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px; background-color: #f9f9f9;">
+          <h2 style="color: #2c3e50; text-align: center; border-bottom: 2px solid #e74c3c; padding-bottom: 10px;">Order Delivered! 🎉</h2>
+          
+          <div style="background-color: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
+            <h3 style="color: #2c3e50;">Hello ${orderDetails.customerName},</h3>
+            
+            <p style="color: #e74c3c; font-size: 18px;">Your order has been delivered!</p>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #e74c3c; margin: 10px 0;">
+              <p style="margin: 5px 0;"><strong>Order ID:</strong> ${orderDetails.orderId}</p>
+              <p style="margin: 5px 0;"><strong>Delivery Time:</strong> ${new Date().toLocaleString()}</p>
+            </div>
+            
+            <p style="color: #34495e; margin-top: 20px;">We hope you enjoy your meal. Please rate your experience in our app.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #7f8c8d; font-size: 14px;">Thank you for choosing our service!<br>Food Delivery Team</p>
+            </div>
+          </div>
+        </div>
+      `;
       return await this.sendEmail(customerEmail, subject, text);
     } catch (error) {
       throw new HttpException(
@@ -130,24 +163,38 @@ export class NotificationService {
     }
   }
 
-  async sendRestaurantOrderNotification(restaurantEmail: string, orderDetails: any) {
+  async sendRestaurantOrderNotification(
+    restaurantEmail: string,
+    orderDetails: any,
+  ) {
     try {
       const subject = 'New Order Received';
       const text = `
-        Hello ${orderDetails.restaurantName},
-
-        You have received a new order:
-        Order ID: ${orderDetails.orderId}
-        Items:
-        ${orderDetails.items.map(item => `- ${item.name} x${item.quantity}`).join('\n')}
-
-        Total Amount: $${orderDetails.totalAmount}
-
-        Please confirm the order and estimated preparation time through your restaurant dashboard.
-
-        Best regards,
-        Food Delivery Team
-    `;
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px; background-color: #f9f9f9;">
+          <h2 style="color: #2c3e50; text-align: center; border-bottom: 2px solid #f39c12; padding-bottom: 10px;">New Order Received</h2>
+          
+          <div style="background-color: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
+            <h3 style="color: #2c3e50;">Hello ${orderDetails.restaurantName},</h3>
+            
+            <p style="color: #f39c12; font-size: 18px;">You have received a new order!</p>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #f39c12; margin: 10px 0;">
+              <p style="margin: 5px 0;"><strong>Order ID:</strong> ${orderDetails.orderId}</p>
+              <h4 style="margin: 15px 0 10px;">Items:</h4>
+              ${orderDetails.items.map(item => `
+                <p style="margin: 5px 0 5px 15px;">• ${item.name} x${item.quantity}</p>
+              `).join('')}
+              <p style="margin: 15px 0 5px; font-weight: bold;">Total Amount: $${orderDetails.totalAmount}</p>
+            </div>
+            
+            <p style="color: #34495e; margin-top: 20px;">Please confirm the order and estimated preparation time through your restaurant dashboard.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <p style="color: #7f8c8d; font-size: 14px;">Best regards,<br>Food Delivery Team</p>
+            </div>
+          </div>
+        </div>
+      `;
       return await this.sendEmail(restaurantEmail, subject, text);
     } catch (error) {
       throw new HttpException(
