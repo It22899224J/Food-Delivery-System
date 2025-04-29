@@ -1,6 +1,7 @@
 import { VehicleType } from '@prisma/client';
 
 export class CreateDriverDto {
+  id: number;
   name: string;
   email: string;
   contact: string;

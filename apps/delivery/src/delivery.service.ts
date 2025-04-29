@@ -126,6 +126,7 @@ export class DeliveryService {
   async createDriver(createDto: CreateDriverDto) {
     return this.prisma.driver.create({
       data: {
+        id: createDto.id.toString(),
         name: createDto.name,
         email: createDto.email,
         contact: createDto.contact,
@@ -190,16 +191,16 @@ export class DeliveryService {
   }
 
   async findDeliveryByDriverId(driverId: string) {
-    const delivery = await this.prisma.delivery.findFirst({
+    const deliveries = await this.prisma.delivery.findMany({
       where: { driverId },
       include: { driver: true },
     });
 
-    if (!delivery) {
-      throw new NotFoundException(`Delivery with driver ID ${driverId} not found`);
+    if (!deliveries || deliveries.length === 0) {
+      throw new NotFoundException(`No deliveries found for driver ID ${driverId}`);
     }
 
-    return delivery;
+    return deliveries;
   }
 
   async findDriverById(id: string) {
