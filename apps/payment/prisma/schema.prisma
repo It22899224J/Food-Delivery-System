@@ -15,6 +15,7 @@ model Payment {
   transactionId String        @unique
   restaurantId  String
   amount        Float
+  paymentMethod String
   currency      String        @default("USD")
   userId        String
   orderId       String     

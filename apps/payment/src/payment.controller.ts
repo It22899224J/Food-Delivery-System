@@ -68,6 +68,7 @@ export class PaymentController {
       amount: number;
       currency?: string;
       restaurantId: string;
+      paymentMethod:string;
     },
   ) {
     return this.paymentService.savePayment(body);

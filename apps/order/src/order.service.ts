@@ -22,9 +22,16 @@ export class OrderService {
   constructor(
     private prisma: PrismaService,
     @Inject('DELIVERY_SERVICE') private deliveryClient: ClientProxy,
+    @Inject('PAYMENT_SERVICE') private paymentClient: ClientProxy,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto) {
+    console.log('Order creation initiated', {
+      userId: createOrderDto.userId,
+      source: createOrderDto,
+      items: createOrderDto.items.map((i) => i.itemId),
+      timestamp: new Date().toISOString(),
+    });
     const totalAmount = createOrderDto.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
@@ -59,7 +66,7 @@ export class OrderService {
       },
     });
 
-    //Emit event to delivery service
+    // Emit event to delivery service
     try {
       const payload = {
         orderId: order.id,
@@ -73,6 +80,25 @@ export class OrderService {
       this.deliveryClient.emit('order:created', payload);
     } catch (error) {
       console.error('Error emitting order:created event:', error);
+    }
+
+    // Save payment information after successful order creation
+    try {
+      const paymentPayload = {
+        transactionId: `order_${order.id}`,
+        orderId: order.id,
+        userId: order.userId,
+        amount: order.totalAmount,
+        restaurantId: order.restaurantId,
+        paymentMethod: order.paymentMethod,
+      };
+      console.log('Saving payment information:', paymentPayload);
+      this.paymentClient.send('payment:save', paymentPayload).subscribe(
+        (response) => console.log('Payment saved successfully:', response),
+        (error) => console.error('Error saving payment:', error),
+      );
+    } catch (error) {
+      console.error('Error processing payment:', error);
     }
 
     return order;
@@ -127,7 +153,6 @@ export class OrderService {
     const order = await this.findOrderById(id);
 
     // Validate status transition
-      
 
     return this.prisma.order.update({
       where: { id },

@@ -52,6 +52,7 @@ export class PaymentService {
     cancelUrl: string,
   ) {
     try {
+      console.log('Started payment session');
       const session = await this.stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: lineItems,
@@ -108,6 +109,7 @@ export class PaymentService {
     amount: number;
     currency?: string;
     restaurantId: string;
+    paymentMethod: string;
   }) {
     try {
       // Create a new payment record in the database using Prisma
@@ -119,6 +121,7 @@ export class PaymentService {
           amount: data.amount,
           currency: data.currency || 'USD',
           restaurantId: data.restaurantId,
+          paymentMethod: data.paymentMethod,
         },
       });
 
