@@ -6,6 +6,7 @@ import {
   IsArray,
   IsOptional,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateFoodItemDto {
   @IsString()
@@ -17,21 +18,27 @@ export class CreateFoodItemDto {
   description: string;
 
   @IsNumber()
+  @Type(() => Number)
   price: number;
 
-  @IsOptional()
-  image?: Buffer;
+  // Removed image: Buffer — now handled via @UploadedFile()
 
   @IsString()
   @IsNotEmpty()
   categoryId: string;
 
   @IsBoolean()
+  @Type(() => Boolean)
   available: boolean;
 
   @IsBoolean()
+  @Type(() => Boolean)
   popular: boolean;
 
+  @IsString()
+  @IsOptional()
+  image?: string; // Base64 image string
+  
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

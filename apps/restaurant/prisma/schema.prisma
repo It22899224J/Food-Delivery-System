@@ -30,7 +30,7 @@ model MenuItem {
   name          String
   description   String
   price         Float
-  image         Bytes     // Store the image as binary data
+  image         String?    // Store the image URL instead of binary data
   categoryId    String
   available     Boolean
   popular       Boolean
