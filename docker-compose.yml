@@ -143,9 +143,28 @@ services:
       dockerfile: apps/payment/Dockerfile
     ports:
       - "3006:3006"
+    depends_on:
+      - payment-db
     environment:
       PORT: 3006
+      DATABASE_URL: postgresql://postgres:password@payment-db:5432/payment
       STRIPE_SECRET_KEY: "sk_test_51RIb3MBVWky9Ykn8nJ05XPR7CtXLmQPYCNsLatmYaxjrXrYSMQ2XD6HuWVt6AL653JJRGiaaadbJaeJ3QaYpPEJD00RqhT1Fqo"
+    networks:
+      - app-network
+      
+  # Payment Database
+  payment-db:
+    image: postgres:15
+    container_name: payment-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment
+    ports:
+      - "5437:5432"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
     networks:
       - app-network
   notification-service:
@@ -173,3 +192,4 @@ volumes:
   delivery_db_data:
   order_db_data:
   auth_db_data:
+  payment_db_data:
