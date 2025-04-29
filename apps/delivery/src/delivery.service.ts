@@ -189,6 +189,19 @@ export class DeliveryService {
     });
   }
 
+  async findDeliveryByDriverId(driverId: string) {
+    const delivery = await this.prisma.delivery.findFirst({
+      where: { driverId },
+      include: { driver: true },
+    });
+
+    if (!delivery) {
+      throw new NotFoundException(`Delivery with driver ID ${driverId} not found`);
+    }
+
+    return delivery;
+  }
+
   async findDriverById(id: string) {
     const driver = await this.prisma.driver.findUnique({ where: { id } });
     if (!driver) {
