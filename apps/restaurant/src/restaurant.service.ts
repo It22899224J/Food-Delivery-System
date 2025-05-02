@@ -28,8 +28,28 @@ export class RestaurantService {
     });
   }
 
+  //Find by owner
+async findOneByOwner(ownerId: string) {
+  return this.prisma.restaurant.findFirst({
+    where: { ownerId },
+    include: {
+      menuItems: true,
+    },
+  });
+}
+  // Find a restaurant by name
+  async findByName(name: string) {
+    return this.prisma.restaurant.findFirst({
+      where: { name },
+      include: {
+        menuItems: true,
+      },
+    });
+  }
+
   // Update a restaurant by ID
   async update(id: string, data: UpdateRestaurantDto) {
+    console.log('Update Restaurant Service', id, data);
     return this.prisma.restaurant.update({
       where: { id },
       data,
