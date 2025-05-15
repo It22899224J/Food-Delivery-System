@@ -13,6 +13,7 @@ datasource db {
 model Payment {
   id            String        @id @default(cuid())
   transactionId String        @unique
+  restaurantId  String
   amount        Float
   currency      String        @default("USD")
   userId        String

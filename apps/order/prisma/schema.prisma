@@ -31,10 +31,10 @@ model Order {
 model OrderItem {
   id                 String   @id @default(uuid())
   orderId            String
-  itemId             String   // References menu item from Restaurant Service
+  itemId             String  
   quantity           Int
-  price              Float    // Price at time of ordering
-  specialInstructions String?  // Optional
+  price              Float    
+  specialInstructions String?  
 
   // Relation
   order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -47,7 +47,7 @@ model OrderStatusHistory {
   orderId            String
   previousStatus     OrderStatus?
   newStatus          OrderStatus
-  changedBy          String      // system/customer/restaurant/driver
+  changedBy          String      
   timestamp          DateTime    @default(now())
 
   // Relation
