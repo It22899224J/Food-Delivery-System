@@ -25,4 +25,46 @@ export class ImageUploadService {
       throw new Error('Image upload failed'); // Handle errors appropriately
     }
   }
+
+ public async removeImage(input: string): Promise<void> {
+    try {
+      const publicId = this.extractPublicId(input);
+
+      console.log('Public ID:', publicId);
+      const result = await cloudinary.v2.uploader.destroy(publicId, {
+        resource_type: 'image',
+         invalidate: true,
+      });
+
+      console.log('Image deletion result:', result);
+      if (result.result !== 'ok') {
+        throw new Error('Image deletion failed');
+      }
+    } catch (error) {
+      console.error('Cloudinary deletion error:', error);
+      throw new Error('Image deletion failed');
+    }
+  }
+
+  private extractPublicId(input: string): string {
+    if (!input.startsWith('http')) {
+      return input;
+    }
+
+    try {
+      const url = new URL(input);
+      const path = url.pathname;
+      const parts = path.split('/');
+      const uploadIndex = parts.indexOf('upload');
+      const relevantParts = parts.slice(uploadIndex + 1);
+      let filename = relevantParts.pop()!;
+      const basename = filename.substring(0, filename.lastIndexOf('.')) || filename;
+      return relevantParts.length ? `${relevantParts.join('/')}/${basename}` : basename;
+    } catch {
+      throw new Error('Invalid Cloudinary URL');
+    }
+  }
 }
+
+
+

@@ -73,15 +73,40 @@ export class FoodItemController {
     return [];
   }
   
-  @Put(':id')
-  @UseInterceptors(FileInterceptor('image'))
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateFoodItemDto,
-    @UploadedFile() image?: Express.Multer.File,
-  ) {
-    return this.foodItemService.update(id, dto, image || null);
+@Put(':id')
+@UseInterceptors(FileInterceptor('image'))
+async update(
+  @Param('id') id: string,
+  @UploadedFile() image: Express.Multer.File,
+  @Body() body: any,
+) {
+  if (!body) {
+    throw new Error('Request body is null or undefined');
   }
+
+  const dto = {
+    name: body.name,
+    description: body.description,
+    price: body.price !== undefined ? parseFloat(body.price) : undefined,
+    categoryId: body.categoryId,
+    available: body.available !== undefined ? body.available === 'true' : undefined,
+    popular: body.popular !== undefined ? body.popular === 'true' : undefined,
+    restaurantId: body.restaurantId,
+    allergies: body.allergies !== undefined ? this.parseFormDataArray(body.allergies) : undefined,
+    dietary: body.dietary !== undefined ? this.parseFormDataArray(body.dietary) : undefined,
+  };
+
+  let imageUrl = '';
+  if (image) {
+    imageUrl = await this.imageUploadService.uploadImage(image.buffer.toString('base64'));
+  } else if (body.image) {
+    imageUrl = await this.imageUploadService.uploadImage(body.image);
+  }
+
+  return this.foodItemService.update(id, dto, imageUrl ? imageUrl.toString() : undefined);
+}
+
+
 
   @Get()
   async findAll(@Query('restaurantId') restaurantId?: string) {
@@ -98,6 +123,18 @@ export class FoodItemController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
+    const foodItem = await this.foodItemService.findOne(id);
+    if (foodItem) {
+      try {
+      if (foodItem.image) {
+      await this.imageUploadService.removeImage(foodItem.image);
+      }
+      }
+      catch (error) {
+        console.error('Error removing image:', error);
+      }
     return this.foodItemService.remove(id);
+    }
+    throw new Error('Food item not available for deletion');
   }
 }
