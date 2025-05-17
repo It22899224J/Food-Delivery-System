@@ -7,8 +7,6 @@ import {
   Delete,
   Patch,
   ParseIntPipe,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,13 +17,11 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @HttpCode(HttpStatus.CREATED)
   async register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
   }
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
@@ -34,7 +30,6 @@ export class AuthController {
   }
 
   @Delete('users/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.authService.deleteUser(id);
   }

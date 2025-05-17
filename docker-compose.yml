@@ -1,20 +1,23 @@
 version: '3.8'
 
 services:
-  nginx:
+
+  api-gateway:
     build:
-      context: ./nginx
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/apiGateway/Dockerfile
     ports:
-      - "80:80"
-    depends_on:
-      - restaurant
-      - delivery-service
-      - order-service
-      - payment-service
-      - auth-service
+      - "8089:3025"
+    environment:
+      - PORT=3025
     networks:
       - app-network
+    depends_on:
+      - auth-service
+      - restaurant
+      - order-service
+      - delivery-service
+      - payment-service
 
   restaurant:
     build:
@@ -44,7 +47,7 @@ services:
     networks:
       - app-network
 
-  # New Delivery Service
+  # Delivery Service
   delivery-service:
     build:
       context: .
@@ -75,8 +78,7 @@ services:
     networks:
       - app-network
 
-
-  # New Order Service
+  # Order Service
   order-service:
     build:
       context: .
@@ -107,7 +109,7 @@ services:
     networks:
       - app-network
 
-# New Auth Service
+  # Auth Service
   auth-service:
     build:
       context: .
@@ -167,6 +169,7 @@ services:
       - payment_db_data:/var/lib/postgresql/data
     networks:
       - app-network
+
   notification-service:
     build:
       context: .
