@@ -59,7 +59,7 @@ async function bootstrap() {
   // Proxy configuration
   const services = {
     '/restaurants': 'http://restaurant:3000/restaurants',
-    '/food-items': 'http://restaurant:3000',
+    '/food-items': 'http://restaurant:3000/food-items',
     '/deliveries': 'http://delivery-service:3002/deliveries',
     '/orders': 'http://order-service:3004',
     '/notification': 'http://notification-service:3015/notification',
