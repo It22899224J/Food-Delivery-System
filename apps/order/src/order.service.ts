@@ -15,6 +15,8 @@ import {
   UpdatePaymentStatusDto,
   PaymentStatus,
 } from './dto/update-payment-status.dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -23,7 +25,12 @@ export class OrderService {
     private prisma: PrismaService,
     @Inject('DELIVERY_SERVICE') private deliveryClient: ClientProxy,
     @Inject('PAYMENT_SERVICE') private paymentClient: ClientProxy,
+    private readonly httpService: HttpService,
   ) {}
+
+  private API_URL_AUTH = "http://auth-service:3012";
+  private API_URL_NOTIFICATION = "http://notification-service:3015";
+  private API_URL_RESTAURANT = "http://restaurant:3000";
 
   async createOrder(createOrderDto: CreateOrderDto) {
     console.log('Order creation initiated', {
@@ -78,6 +85,40 @@ export class OrderService {
       };
       console.log('Emitting order:created event with payload:', payload);
       this.deliveryClient.emit('order:created', payload);
+    } catch (error) {
+      console.error('Error emitting order:created event:', error);
+    }
+
+    try {
+      const auth_url = `${this.API_URL_AUTH}/auth/users/${order.userId}`;
+      const restaurant_url = `${this.API_URL_RESTAURANT}/restaurants/${order.restaurantId}`;
+      const auth_response = await firstValueFrom(
+        this.httpService.get(auth_url),
+      );
+      if (auth_response.status !== 200) {
+        throw new Error('Failed to get user information for email');
+      }
+
+      const restaurant_response = await firstValueFrom(
+        this.httpService.get(restaurant_url),
+      );
+      if (restaurant_response.status!== 200) {
+        throw new Error('Failed to get restaurant information for email');
+      }
+
+      const user = auth_response.data.user;
+
+      const notification_url = `${this.API_URL_NOTIFICATION}/notification/customer/confirmation`;
+      const notification_response = firstValueFrom(this.httpService.post(notification_url, {
+          "email": user.email,
+          "orderDetails": {
+            "customerName": user.name,
+            "orderId": order.id,
+            "restaurantName": restaurant_response.data.name,
+            "totalAmount": order.totalAmount
+          },
+      }),
+     );
     } catch (error) {
       console.error('Error emitting order:created event:', error);
     }

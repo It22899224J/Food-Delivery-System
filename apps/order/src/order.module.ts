@@ -3,6 +3,7 @@ import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { PrismaService } from './prisma.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    HttpModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, PrismaService],
