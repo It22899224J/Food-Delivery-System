@@ -36,7 +36,8 @@ async function bootstrap() {
     // Skip authentication for auth routes and OPTIONS requests
     if (
       req.path.startsWith('/auth') ||
-      (req.path.startsWith('/restaurants') && req.method === 'GET')
+      (req.path.startsWith('/restaurants') && req.method === 'GET') ||
+      (req.path.startsWith('/drivers') && req.method === 'POST')
     ) {
       return next();
     }
@@ -61,6 +62,7 @@ async function bootstrap() {
     '/restaurants': 'http://restaurant:3000/restaurants',
     '/food-items': 'http://restaurant:3000/food-items',
     '/deliveries': 'http://delivery-service:3002/deliveries',
+    '/drivers': 'http://delivery-service:3002/drivers',
     '/orders': 'http://order-service:3004',
     '/notification': 'http://notification-service:3015/notification',
     '/payments': 'http://payment-service:3006',
