@@ -101,7 +101,6 @@ export class NotificationService {
               <p style="margin: 5px 0;"><strong>Order ID:</strong> ${orderDetails.orderId}</p>
               <p style="margin: 5px 0;"><strong>Restaurant:</strong> ${orderDetails.restaurantName}</p>
               <p style="margin: 5px 0;"><strong>Total Amount:</strong> $${orderDetails.totalAmount}</p>
-              <p style="margin: 5px 0;"><strong>Estimated Delivery:</strong> ${orderDetails.estimatedDeliveryTime}</p>
             </div>
             
             <p style="color: #34495e; margin-top: 20px;">We'll notify you once your order is picked up by our driver.</p>
