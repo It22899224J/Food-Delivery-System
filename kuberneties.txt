@@ -1,0 +1,34 @@
+kubectl apply -f k8s/restaurant-db-deployment.yaml
+kubectl apply -f k8s/restaurant-db-service.yaml
+kubectl apply -f k8s/restaurant-deployment.yaml
+kubectl apply -f k8s/restaurant-service.yaml
+
+kubectl apply -f k8s/ --recursive
+
+
+
+--->apply all updates
+
+kubectl get pods
+kubectl get services
+
+
+kubectl rollout restart deployment restaurant
+
+
+
+chmod +x port-forward-all.sh
+./port-forward-all.sh
+
+
+kubectl port-forward deployment/api-gateway 8089:3025
+
+
+chmod +x migrations.sh
+./migrations.sh
+
+
+
+
+kubectl exec -it deployment/restaurant -- \
+  npx prisma migrate dev --name init --schema=./apps/restaurant/prisma/schema.prisma

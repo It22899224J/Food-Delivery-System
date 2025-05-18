@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: restaurant-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurant-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restaurant-db
+  template:
+    metadata:
+      labels:
+        app: restaurant-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "password"
+        - name: POSTGRES_DB
+          value: "restaurant"
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: restaurant-db-storage
+      volumes:
+      - name: restaurant-db-storage
+        persistentVolumeClaim:
+          claimName: restaurant-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurant-db
+spec:
+  selector:
+    app: restaurant-db
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
